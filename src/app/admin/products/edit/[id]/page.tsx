@@ -46,9 +46,9 @@ export default function EditProductPage() {
     const currentPackage = { ...updatedPackages[index] };
 
     if (name === 'price' || name === 'stock_quantity') {
-      currentPackage[name] = parseFloat(value) || 0;
+      currentPackage[name as 'price' | 'stock_quantity'] = parseFloat(value) || 0;
     } else {
-      currentPackage[name] = value;
+      currentPackage[name as 'size' | 'sku'] = value;
     }
     
     updatedPackages[index] = currentPackage;
