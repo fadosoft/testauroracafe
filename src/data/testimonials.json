@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "reviewerName": "Maria Rossi",
+    "rating": 5,
+    "reviewText": "Caffè eccezionale! L'aroma è inconfondibile e il gusto sublime. La spedizione è stata velocissima. Consigliatissimo!",
+    "date": "2025-07-20"
+  },
+  {
+    "id": 2,
+    "reviewerName": "Marco Bianchi",
+    "rating": 5,
+    "reviewText": "Sono rimasto piacevolmente sorpreso dalla qualità di questo caffè. Ogni tazza è un vero piacere. Servizio clienti impeccabile.",
+    "date": "2025-07-22"
+  },
+  {
+    "id": 3,
+    "reviewerName": "Laura Verdi",
+    "rating": 4,
+    "reviewText": "Ottimo caffè, anche se preferirei più varietà di decaffeinato. Comunque, la qualità è alta e il packaging curato.",
+    "date": "2025-07-25"
+  }
+]

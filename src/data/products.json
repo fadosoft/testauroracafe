@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "Espresso Forte",
+    "description": "Una miscela intensa e corposa per un espresso robusto e deciso. Tostatura scura.",
+    "image": "/images/espresso-forte.webp",
+    "category": "Caffè in grani",
+    "packages": [
+      {
+        "size": "50 pezzi",
+        "price": 8.5,
+        "stock_quantity": 100,
+        "sku": "AUR-CAF-001-50"
+      },
+      {
+        "size": "100 pezzi",
+        "price": 15,
+        "stock_quantity": 50,
+        "sku": "AUR-CAF-001-100"
+      },
+      {
+        "size": "150 pezzi",
+        "price": 25,
+        "stock_quantity": 30,
+        "sku": "AUR-CAF-001-150"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Arabica Gentile",
+    "description": "100% Arabica dal gusto morbido e aromatico, con note floreali. Tostatura media.",
+    "image": "/images/arabica-gentile.webp",
+    "category": "Caffè in grani",
+    "packages": [
+      {
+        "size": "Standard",
+        "price": 12,
+        "stock_quantity": 80,
+        "sku": "AUR-CAF-002-50"
+      },
+      {
+        "sku": "AUR-CAF-002-100",
+        "size": "100 cialde",
+        "price": 0,
+        "stock_quantity": 2
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Decaffeinato Sereno",
+    "description": "Tutto il gusto del buon caffè, ma senza caffeina. Ideale per la sera.",
+    "image": "/images/decaffeinato-sereno.webp",
+    "category": "Caffè macinato",
+    "packages": [
+      {
+        "size": "Standard",
+        "price": 9,
+        "stock_quantity": 50,
+        "sku": "AUR-CAF-003"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Kit Moka Perfetta",
+    "description": "Un kit che include la nostra miscela per moka e una guarnizione di ricambio.",
+    "image": "/images/kit-moka.webp",
+    "category": "Kit e Accessori",
+    "packages": [
+      {
+        "size": "Unica",
+        "price": 15.5,
+        "stock_quantity": 30,
+        "sku": "AUR-KIT-001"
+      }
+    ]
+  },
+  {
+    "id": 1754846359690,
+    "name": "Cialde Caffe Borbone Miscela Decisa",
+    "description": "Le Cialde Borbone Decisa nascono da miscele di altissimo livello, che creano un caffè di spessore con un gusto intenso, ricco e cremoso, proprio come il caffè dei bar napoletani. Confezione a partire da 50 cialde.",
+    "image": "/images/cialde_caffe_borbone_miscela_decisa_caffexpert.webp",
+    "category": "Cialde",
+    "packages": [
+      {
+        "size": "50 cialde",
+        "price": 11,
+        "stock_quantity": 20,
+        "sku": "AUR-CAF-005-50"
+      },
+      {
+        "sku": "AUR-CAF-005-100",
+        "size": "100 cialde + 15 omaggio",
+        "price": 33.9,
+        "stock_quantity": 30
+      },
+      {
+        "sku": "AUR-CAF-005-150",
+        "size": "150 cialde",
+        "price": 21,
+        "stock_quantity": 10
+      }
+    ]
+  },
+  {
+    "id": 1754919938980,
+    "name": "Cialde Caffe Borbone Miscela Nera",
+    "description": "La Miscela Nera di Caffè Borbone è un caffè espresso intenso e robusto, caratterizzato da un gusto marcato e una cremosità ricca che richiama la tradizione del vero espresso napoletano. È ottenuto da una selezione equilibrata di caffè Arabica e Robusta, tostati e dosati per offrire un corpo pieno e un sapore deciso, ideale per gli amanti del caffè forte e cremoso.",
+    "image": "/images/cialde-borbone-compostabili-ese-44mm-miscela-nera_01.webp",
+    "category": "Cialde",
+    "packages": [
+      {
+        "size": "50 cialde",
+        "price": 9,
+        "stock_quantity": 20,
+        "sku": "AUR-CAF-00650"
+      },
+      {
+        "sku": "AUR-CAF-006100",
+        "size": "100 cialde",
+        "price": 17,
+        "stock_quantity": 10
+      },
+      {
+        "sku": "AUR-CAF-006-150",
+        "size": "150 cialde",
+        "price": 21,
+        "stock_quantity": 10
+      }
+    ]
+  }
+]

@@ -1,0 +1,112 @@
+
+:root {
+  --primary-coffee: #6F4E37; /* Dark Coffee Brown */
+  --secondary-cream: #F5F5DC; /* Beige/Cream */
+  --accent-gold: #D4AF37; /* Gold/Brass for highlights */
+  --dark-text: #333333;
+  --light-text: #FFFFFF;
+  --light-bg: #F8F8F8;
+  --text-color-light: #333333; /* Dark gray for light mode */
+  --text-color-dark: #FFFFFF; /* White for dark mode */
+}
+
+body {
+  padding: 0;
+  margin: 0;
+  /* Consider importing custom fonts here, e.g., from Google Fonts */
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  color: var(--text-color-light);
+  background-color: var(--light-bg);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    color: var(--text-color-dark);
+    background-color: #1a1a1a;
+  }
+}
+
+a {
+  color: var(--primary-coffee);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-gold);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Override Bootstrap primary button to use our coffee primary color */
+.btn-primary {
+  background-color: var(--primary-coffee);
+  border-color: var(--primary-coffee);
+}
+
+.btn-primary:hover {
+  background-color: #5A3E2C; /* Slightly darker coffee */
+  border-color: #5A3E2C;
+}
+
+.btn-outline-primary {
+  color: var(--primary-coffee);
+  border-color: var(--primary-coffee);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-coffee);
+  color: var(--light-text);
+}
+
+/* Adjust Navbar background to match theme */
+.bg-body-tertiary {
+  background-color: var(--secondary-cream) !important;
+}
+
+/* Add hover effect to product cards */
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.navbar-logo {
+  width: 150px;
+  height: auto;
+}
+
+.text-light-dark-mode {
+  color: var(--text-color-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  .text-light-dark-mode {
+    color: var(--text-color-dark);
+  }
+}
+
+/* Custom button for accent color */
+
+.navbar-nav .nav-link {
+  font-size: 1.1rem; /* Slightly larger font size */
+  font-weight: bold; /* Bold text */
+}
+
+.btn-accent-gold {
+  background-color: var(--accent-gold);
+  border-color: var(--accent-gold);
+  color: var(--dark-text); /* Using dark text for better contrast */
+}
+
+.btn-accent-gold:hover {
+  background-color: #B89B30; /* Slightly darker gold for hover */
+  border-color: #B89B30;
+  color: var(--light-text);
+}
+
+
