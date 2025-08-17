@@ -36,30 +36,42 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
   });
 };
 
-// Placeholder per la generazione del PDF tramite API esterna
 export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
-  // QUI DOVRAI INTEGRARE LA CHIAMATA ALL'API ESTERNA PER LA GENERAZIONE DEL PDF
-  // ESEMPIO:
-  // const response = await fetch('https://api.pdfservice.com/generate', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //     'Authorization': `Bearer YOUR_API_KEY`, // Sostituisci con la tua chiave API
-  //   },
-  //   body: JSON.stringify({ html: htmlContent, options: { format: 'A4' } }),
-  // });
+  // Sostituisci 'YOUR_PDF_CO_API_KEY' con la tua chiave API di PDF.co
+  // È FORTEMENTE RACCOMANDATO DI USARE UNA VARIABILE D'AMBIENTE PER LA CHIAVE API (es. process.env.PDF_CO_API_KEY)
+  const pdfCoApiKey = process.env.PDF_CO_API_KEY; // <-- SOSTITUISCI QUESTO
 
-  // if (!response.ok) {
-  //   throw new Error(`Errore API: ${response.statusText}`);
-  // }
+  const response = await fetch('https://api.pdf.co/v1/pdf/convert/from/html', {
+    method: 'POST',
+    headers: {
+      'x-api-key': pdfCoApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      html: htmlContent,
+      name: `order-${orderId}.pdf`,
+      async: false // Imposta a true se vuoi un'operazione asincrona e ricevere un URL per il download
+    }),
+  });
 
-  // const pdfBlob = await response.blob();
-  // const pdfBuffer = Buffer.from(await pdfBlob.arrayBuffer()); // Converti Blob in Buffer
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Errore API PDF.co: ${response.status} - ${errorText}`);
+  }
 
-  // const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
-  // return pdfUrl;
+  const jsonResponse = await response.json();
+  if (!jsonResponse.url) {
+    throw new Error('Risposta API PDF.co non valida: URL del PDF non trovato.');
+  }
 
-  // Per ora, restituisco un URL di esempio e un errore per indicare che l'integrazione è necessaria
-  console.warn("La generazione del PDF tramite API esterna non è ancora implementata. Restituendo URL di esempio.");
-  throw new Error("Integrazione API per la generazione PDF non implementata.");
+  // Scarica il PDF dal URL fornito da PDF.co
+  const pdfResponse = await fetch(jsonResponse.url);
+  if (!pdfResponse.ok) {
+    throw new Error(`Errore durante il download del PDF da PDF.co: ${pdfResponse.statusText}`);
+  }
+
+  const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
+
+  const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
+  return pdfUrl;
 }
