@@ -1,5 +1,6 @@
 
-import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
@@ -40,8 +41,10 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
 
 export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
   const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: chromium.args,
+    defaultViewport: chromium.defaultViewport,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
   });
   const page = await browser.newPage();
 
