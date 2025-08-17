@@ -41,12 +41,17 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
   // È FORTEMENTE RACCOMANDATO DI USARE UNA VARIABILE D'AMBIENTE PER LA CHIAVE API (es. process.env.PDF_CO_API_KEY)
   const pdfCoApiKey = process.env.PDF_CO_API_KEY; // <-- SOSTITUISCI QUESTO
 
+  if (!pdfCoApiKey) {
+    throw new Error('PDF.co API Key non configurata. Assicurati che la variabile d\'ambiente PDF_CO_API_KEY sia impostata su Vercel.');
+  }
+
   const response = await fetch('https://api.pdf.co/v1/pdf/convert/from/html', {
     method: 'POST',
     headers: {
       'x-api-key': pdfCoApiKey,
       'Content-Type': 'application/json',
     },
+
     body: JSON.stringify({
       html: htmlContent,
       name: `order-${orderId}.pdf`,
