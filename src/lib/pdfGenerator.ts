@@ -53,7 +53,7 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
   await browser.close();
 
   // Carica il buffer su Cloudinary e ottieni l'URL
-  const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
+  const pdfUrl = await uploadToCloudinary(Buffer.from(pdfBuffer), orderId);
 
   return pdfUrl; // Ritorna l'URL sicuro di Cloudinary
 }
