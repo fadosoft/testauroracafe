@@ -1,6 +1,6 @@
 {
   "functions": {
-    "src/app/api/**/*.ts": {
+    "src/app/api/generate-order-pdf/route.ts": {
       "includeFiles": "node_modules/@sparticuz/chromium/bin/**"
     }
   }
