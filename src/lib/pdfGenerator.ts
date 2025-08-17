@@ -43,7 +43,7 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
   const browser = await puppeteer.launch({
     args: chromium.args,
     executablePath: await chromium.executablePath(),
-    headless: chromium.headless,
+    headless: "new",
   });
   const page = await browser.newPage();
 
