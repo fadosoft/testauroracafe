@@ -1,25 +1,59 @@
 
 import puppeteer from 'puppeteer';
-import path from 'path';
-import fs from 'fs/promises';
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
+
+// Configura Cloudinary con le credenziali dalle variabili d'ambiente
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Funzione per caricare un buffer su Cloudinary
+const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: 'orders', // Salva i PDF in una cartella 'orders' su Cloudinary
+        public_id: `order-${orderId}`, // Nome del file
+        resource_type: 'raw', // Tratta il file come un file generico
+      },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        if (result) {
+          resolve(result.secure_url);
+        } else {
+          reject(new Error('Caricamento su Cloudinary fallito senza un risultato.'));
+        }
+      }
+    );
+
+    const readableStream = new Readable();
+    readableStream.push(buffer);
+    readableStream.push(null);
+    readableStream.pipe(uploadStream);
+  });
+};
 
 export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
   const browser = await puppeteer.launch({
-    headless: true, // Esegui in modalità headless (senza interfaccia grafica)
-    args: ['--no-sandbox', '--disable-setuid-sandbox'], // Necessario per ambienti server
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
 
   await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-  // Assicurati che la directory di output esista
-  const outputDir = path.join(process.cwd(), 'public', 'orders');
-  await fs.mkdir(outputDir, { recursive: true });
-
-  const pdfPath = path.join(outputDir, `order-${orderId}.pdf`);
-  await page.pdf({ path: pdfPath, format: 'A4' });
+  // Genera il PDF in un buffer di memoria
+  const pdfBuffer = await page.pdf({ format: 'A4' });
 
   await browser.close();
 
-  return `/orders/order-${orderId}.pdf`; // Ritorna il percorso relativo per l'accesso web
+  // Carica il buffer su Cloudinary e ottieni l'URL
+  const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
+
+  return pdfUrl; // Ritorna l'URL sicuro di Cloudinary
 }

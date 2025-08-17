@@ -62,9 +62,9 @@ export async function POST(req: NextRequest) {
       <p>Grazie per il tuo acquisto!</p>
     `;
 
-    const pdfPath = await generatePdf(htmlContent, orderId);
+    const pdfUrl = await generatePdf(htmlContent, orderId);
 
-    return NextResponse.json({ message: 'PDF generato con successo!', pdfPath });
+    return NextResponse.json({ message: 'PDF generato e caricato con successo!', pdfUrl });
   } catch (error: any) {
     console.error('Errore nella generazione del PDF:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
