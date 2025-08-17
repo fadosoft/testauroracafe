@@ -10,7 +10,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { formData, cartItems, orderTotal } = body;
-    const { formData, cartItems, orderTotal } = body;
 
     if (!formData || !cartItems || !orderTotal) {
       return NextResponse.json({ error: 'Dati mancanti per la generazione del PDF.' }, { status: 400 });
