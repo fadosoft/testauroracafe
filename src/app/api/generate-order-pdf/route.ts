@@ -4,6 +4,7 @@ import { generatePdf } from '@/lib/pdfGenerator';
 import { CartItem } from '@/context/CartContext';
 
 export async function POST(req: NextRequest) {
+  console.log("API route generate-order-pdf hit!");
   try {
     const body = await req.json();
     const { formData, cartItems, orderTotal } = body;
