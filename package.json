@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "node_modules/chrome-aws-lambda/bin/chromium"
+    "postinstall": "node node_modules/chrome-aws-lambda/install.js"
   },
   "dependencies": {
     "bootstrap": "^5.3.7",
