@@ -42,7 +42,6 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
 export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
   const browser = await puppeteer.launch({
     args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
     executablePath: await chromium.executablePath(),
     headless: chromium.headless,
   });
