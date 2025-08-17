@@ -1,6 +1,5 @@
 
-import chromium from '@sparticuz/chromium';
-import puppeteer from 'puppeteer-core';
+import pdf from 'html-pdf';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
 
@@ -40,22 +39,17 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
 };
 
 export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    executablePath: process.env.CHROME_EXECUTABLE_PATH || chromium.executablePath,
-    headless: chromium.headless,
+  return new Promise((resolve, reject) => {
+    pdf.create(htmlContent, { format: 'A4' }).toBuffer(async (err, buffer) => {
+      if (err) {
+        return reject(err);
+      }
+      try {
+        const pdfUrl = await uploadToCloudinary(buffer, orderId);
+        resolve(pdfUrl);
+      } catch (uploadError) {
+        reject(uploadError);
+      }
+    });
   });
-  const page = await browser.newPage();
-
-  await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-
-  // Genera il PDF in un buffer di memoria
-  const pdfBuffer = await page.pdf({ format: 'A4' });
-
-  await browser.close();
-
-  // Carica il buffer su Cloudinary e ottieni l'URL
-  const pdfUrl = await uploadToCloudinary(Buffer.from(pdfBuffer), orderId);
-
-  return pdfUrl; // Ritorna l'URL sicuro di Cloudinary
 }
