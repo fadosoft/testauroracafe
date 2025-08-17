@@ -25,20 +25,35 @@ export default function CheckoutPage() {
     e.preventDefault();
     console.log("Ordine inviato:", { formData, cartItems });
 
-    // Test: Solo la chiamata fetch, senza await, then/catch
-    fetch('/api/generate-order-pdf', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        formData,
-        cartItems,
-        orderTotal: getCartTotal().toFixed(2),
-      }),
-    });
+    try {
+      const response = await fetch('/api/generate-order-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          formData,
+          cartItems,
+          orderTotal: getCartTotal().toFixed(2),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Errore nella generazione del PDF:", errorData.error);
+        // Potresti voler mostrare un messaggio di errore all'utente qui
+        alert("Si è verificato un errore durante la generazione del PDF. Riprova più tardi.");
+      } else {
+        console.log("Chiamata API per generazione PDF completata con successo.");
+        // Se necessario, puoi leggere la risposta qui, ad esempio l'URL del PDF
+        // const successData = await response.json();
+        // console.log("Successo:", successData);
+      }
+    } catch (error) {
+      console.error("Errore durante la chiamata API per generazione PDF:", error);
+      alert("Si è verificato un errore di rete. Riprova più tardi.");
+    }
     
-    console.log("Dopo la chiamata fetch (test)"); // Added log
     clearCart();
     router.push('/thank-you');
   };
