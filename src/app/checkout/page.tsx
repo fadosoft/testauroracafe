@@ -45,17 +45,19 @@ export default function CheckoutPage() {
         alert("Si è verificato un errore durante la generazione del PDF. Riprova più tardi.");
       } else {
         console.log("Chiamata API per generazione PDF completata con successo.");
-        // Se necessario, puoi leggere la risposta qui, ad esempio l'URL del PDF
-        // const successData = await response.json();
-        // console.log("Successo:", successData);
+        const successData = await response.json();
+        console.log("Successo:", successData);
+        clearCart(); // Clear cart on success
+        // Passa l'URL del PDF alla pagina di ringraziamento
+        router.push(`/thank-you?pdfUrl=${encodeURIComponent(successData.pdfUrl)}`);
       }
     } catch (error) {
       console.error("Errore durante la chiamata API per generazione PDF:", error);
       alert("Si è verificato un errore di rete. Riprova più tardi.");
+      clearCart(); // Clear cart even on error
+      // In caso di errore, reindirizza comunque alla pagina di ringraziamento, ma senza l'URL del PDF
+      router.push('/thank-you');
     }
-    
-    clearCart();
-    router.push('/thank-you');
   };
 
   if (cartItems.length === 0) {
