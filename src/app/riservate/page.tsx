@@ -79,14 +79,41 @@ export default function RiservatePage() {
               <div className="mt-4">
                 <p className="lead">Ordini disponibili:</p>
                 <ul className="list-group mx-auto" style={{ maxWidth: '400px' }}>
-                  {orders.map((order) => (
-                    <li key={order.orderId} className="list-group-item d-flex justify-content-between align-items-center">
-                      Ordine ID: {order.orderId}
-                      <a href={`/download-pdf?pdfUrl=${encodeURIComponent(order.pdfUrl)}`} className="btn btn-sm btn-success">
-                        Scarica PDF
-                      </a>
-                    </li>
-                  ))}
+                  {orders.map((order) => {
+                    const getPublicIdFromUrl = (url: string) => {
+                      try {
+                        const parts = url.split('/');
+                        const ordersIndex = parts.indexOf('orders');
+                        if (ordersIndex !== -1 && parts.length > ordersIndex + 1) {
+                          const fileNameWithExt = parts[ordersIndex + 1];
+                          const fileName = fileNameWithExt.split('.')[0];
+                          return `orders/${fileName}`;
+                        }
+                        return null;
+                      } catch {
+                        return null;
+                      }
+                    };
+                    const publicId = getPublicIdFromUrl(order.pdfUrl);
+
+                    const handleDownload = () => {
+                      if (!publicId) {
+                        alert('URL del PDF non valido, impossibile scaricare.');
+                        return;
+                      }
+                      window.open(`/api/download-and-delete-pdf?public_id=${publicId}`, '_blank');
+                      setOrders(currentOrders => currentOrders.filter(o => o.orderId !== order.orderId));
+                    };
+
+                    return (
+                      <li key={order.orderId} className="list-group-item d-flex justify-content-between align-items-center">
+                        Ordine ID: {order.orderId}
+                        <button onClick={handleDownload} className="btn btn-sm btn-success">
+                          Scarica e Rimuovi
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ) : (
