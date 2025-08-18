@@ -1,4 +1,5 @@
 
+import Image from 'next/image';
 import Link from 'next/link';
 
 // Definiamo la struttura dei dati per un singolo prodotto
@@ -35,7 +36,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="col mb-4">
       <div className="card h-100">
-        <img src={product.image} className="card-img-top" alt={product.name} style={{ width: '300px', height: '200px', objectFit: 'cover', margin: '0 auto', display: 'block' }} />
+        <Image src={product.image} className="card-img-top" alt={product.name} width={300} height={200} style={{ objectFit: 'cover', margin: '0 auto', display: 'block' }} />
         <div className="card-body d-flex flex-column">
           <h5 className="card-title">{product.name}</h5>
           <p className="card-text">{product.description}</p>

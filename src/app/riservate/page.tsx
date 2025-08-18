@@ -1,14 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
+interface Order {
+  orderId: string;
+  pdfUrl: string;
+}
+
 export default function RiservatePage() {
+  const router = useRouter();
   const [secretKeyInput, setSecretKeyInput] = useState('');
   const [showContent, setShowContent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const CORRECT_SECRET_KEY = 'RISERVATE_SECRET'; // Placeholder: In a real app, validate this via API
 
@@ -18,20 +25,20 @@ export default function RiservatePage() {
       setErrorMessage('');
       setLoading(true);
       try {
-        const response = await fetch('/api/get-last-pdf');
+        const response = await fetch('/api/get-all-orders');
         if (!response.ok) {
-          throw new Error('Errore nel recupero dell\'URL del PDF.');
+          throw new Error('Errore nel recupero degli ordini.');
         }
         const data = await response.json();
-        if (data.lastPdfUrl) {
-          setPdfUrl(data.lastPdfUrl);
+        if (data.orders && data.orders.length > 0) {
+          setOrders(data.orders);
           setShowContent(true);
         } else {
-          setErrorMessage('Nessun PDF trovato. Generane uno prima.');
+          setErrorMessage('Nessun ordine trovato. Generane uno prima.');
         }
       } catch (error: any) {
-        console.error('Errore nel recupero PDF:', error);
-        setErrorMessage(`Errore nel recupero PDF: ${error.message || 'Errore sconosciuto'}`);
+        console.error('Errore nel recupero ordini:', error);
+        setErrorMessage(`Errore nel recupero ordini: ${error.message || 'Errore sconosciuto'}`);
       } finally {
         setLoading(false);
       }
@@ -67,16 +74,23 @@ export default function RiservatePage() {
           </form>
         ) : (
           <div>
-            <p className="lead">Benvenuto nell\'area riservata!</p>
-            {pdfUrl ? (
+            <p className="lead">Benvenuto nell&apos;area riservata!</p>
+            {orders.length > 0 ? (
               <div className="mt-4">
-                <p className="lead">Scarica l\'ultimo PDF generato:</p>
-                <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="btn btn-success btn-lg">
-                  <i className="bi bi-download me-2"></i>Scarica PDF
-                </a>
+                <p className="lead">Ordini disponibili:</p>
+                <ul className="list-group mx-auto" style={{ maxWidth: '400px' }}>
+                  {orders.map((order) => (
+                    <li key={order.orderId} className="list-group-item d-flex justify-content-between align-items-center">
+                      Ordine ID: {order.orderId}
+                      <a href={`/download-pdf?pdfUrl=${encodeURIComponent(order.pdfUrl)}`} className="btn btn-sm btn-success">
+                        Scarica PDF
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             ) : (
-              <p className="lead text-warning">Nessun PDF disponibile al momento.</p>
+              <p className="lead text-warning">Nessun ordine disponibile al momento.</p>
             )}
           </div>
         )}

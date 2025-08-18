@@ -25,7 +25,7 @@ export default function Home() {
         textShadow: '2px 2px 4px rgba(0,0,0,0.7)'
       }}>
         <div className="container-fluid py-5">
-          <h1 className="display-3 fw-bold mb-3 text-white">Scopri l'Essenza del Vero Caffè</h1>
+          <h1 className="display-3 fw-bold mb-3 text-white">Scopri l&apos;Essenza del Vero Caffè</h1>
           <p className="fs-4 mb-4 text-white">Miscele pregiate, selezionate con cura, tostato con amore, passione artigianale, aroma inconfondibile.</p>
           <Link href="/products" className="btn btn-primary btn-lg">Esplora i Prodotti</Link>
         </div>

@@ -1,6 +1,7 @@
 
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import productsData from '@/data/products.json';
 import { Product } from '@/components/ProductCard'; // Usiamo la stessa interfaccia
@@ -59,7 +60,7 @@ export default function ProductPage({ params }: ProductPageProps) {
     <div className="container mt-5">
       <div className="row">
         <div className="col-md-6">
-          <img src={product.image} className="img-fluid rounded" alt={product.name} style={{ width: '100%', height: 'auto', objectFit: 'cover' }} />
+          <Image src={product.image} className="img-fluid rounded" alt={product.name} width={500} height={500} style={{ objectFit: 'cover' }} />
         </div>
         <div className="col-md-6">
           <h1>{product.name}</h1>

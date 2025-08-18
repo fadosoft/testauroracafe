@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCart } from '@/context/CartContext';
 import Link from 'next/link';
 
@@ -31,7 +32,7 @@ export default function CartPage() {
                 <tr key={item.package.sku}>
                   <td>
                     <div className="d-flex align-items-center">
-                      <img src={item.productImage} alt={item.productName} style={{ width: '80px', height: '80px', objectFit: 'cover' }} className="me-3 rounded" />
+                      <Image src={item.productImage} alt={item.productName} width={80} height={80} style={{ objectFit: 'cover' }} className="me-3 rounded" />
                       <div>
                         <h5 className="mb-0">{item.productName}</h5>
                         <small className="text-muted">Formato: {item.package.size}</small>

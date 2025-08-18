@@ -2,14 +2,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePdf } from '@/lib/pdfGenerator';
 import { CartItem } from '@/context/CartContext';
-import fs from 'fs/promises'; // Import fs/promises
-import path from 'path'; // Import path
+import { kv } from '@vercel/kv';
 
 export async function POST(req: NextRequest) {
   console.log("API route generate-order-pdf hit!");
   try {
     const body = await req.json();
     const { formData, cartItems, orderTotal } = body;
+    console.log('Received cartItems:', cartItems);
 
     if (!formData || !cartItems || !orderTotal) {
       return NextResponse.json({ error: 'Dati mancanti per la generazione del PDF.' }, { status: 400 });
@@ -67,10 +67,11 @@ export async function POST(req: NextRequest) {
 
     const pdfUrl = await generatePdf(htmlContent, orderId);
 
-    // Salva l'URL del PDF nel file JSON
-    const dataFilePath = path.join(process.cwd(), 'src', 'data', 'last_pdf_url.json');
-    await fs.writeFile(dataFilePath, JSON.stringify({ lastPdfUrl: pdfUrl }), 'utf-8');
-    console.log(`URL PDF salvato in: ${dataFilePath}`);
+    // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
+    await kv.set(`order:${orderId}`, pdfUrl);
+    // Aggiungi l'ID dell'ordine a una lista di tutti gli ordini
+    await kv.lpush('all_order_ids', orderId);
+    console.log(`URL PDF per ordine ${orderId} salvato in Vercel KV: ${pdfUrl}`);
 
     return NextResponse.json({ message: 'PDF generato e caricato con successo!', pdfUrl });
   } catch (error: any) {
