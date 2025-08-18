@@ -1,33 +1,37 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Configura Cloudinary con le credenziali dalle variabili d'ambiente
+// Assicurati che queste variabili siano impostate nel tuo ambiente Vercel
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const fileName = searchParams.get('file');
+  const publicId = searchParams.get('public_id'); // Ora usiamo il public_id di Cloudinary
 
-  if (!fileName) {
-    return new NextResponse('Nome del file mancante', { status: 400 });
+  if (!publicId) {
+    return new NextResponse('ID pubblico del file mancante', { status: 400 });
   }
 
-  // Pulisce il nome del file per evitare attacchi (path traversal)
-  const safeFileName = path.basename(fileName);
-
-  const filePath = path.join(process.cwd(), 'public', 'orders', safeFileName);
-
   try {
-    // Verifica che il file esista
-    if (!fs.existsSync(filePath)) {
-      return new NextResponse('File non trovato', { status: 404 });
-    }
+    // Costruisci l'URL del file su Cloudinary
+    const cloudinaryUrl = cloudinary.url(publicId, { resource_type: 'raw' });
 
-    // Legge il file
-    const fileBuffer = fs.readFileSync(filePath);
+    // Scarica il file da Cloudinary
+    const pdfResponse = await fetch(cloudinaryUrl);
+    if (!pdfResponse.ok) {
+      return new NextResponse('File non trovato su Cloudinary', { status: 404 });
+    }
+    const fileBuffer = await pdfResponse.arrayBuffer();
 
     // Imposta gli header per forzare il download
     const headers = new Headers();
-    headers.append('Content-Disposition', `attachment; filename="${safeFileName}"`);
+    headers.append('Content-Disposition', `attachment; filename="${publicId}.pdf"`);
     headers.append('Content-Type', 'application/pdf');
 
     // Crea la risposta con il contenuto del file
@@ -36,20 +40,19 @@ export async function GET(request: NextRequest) {
       headers: headers,
     });
 
-    // Elimina il file DOPO aver preparato la risposta
-    // NOTA: In un ambiente serverless, l'esecuzione potrebbe terminare prima del completamento.
-    // Un approccio più robusto potrebbe usare un task in background o una strategia diversa.
+    // Elimina il file da Cloudinary DOPO aver preparato la risposta
     try {
-      fs.unlinkSync(filePath);
-    } catch (unlinkError) {
-      console.error(`Errore durante l'eliminazione del file ${filePath}:`, unlinkError);
+      await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      console.log(`File ${publicId} eliminato con successo da Cloudinary.`);
+    } catch (destroyError) {
+      console.error(`Errore durante l'eliminazione del file ${publicId} da Cloudinary:`, destroyError);
       // Non blocchiamo il download se l'eliminazione fallisce, ma logghiamo l'errore.
     }
 
     return response;
 
   } catch (error) {
-    console.error(`Errore durante la lettura del file ${filePath}:`, error);
+    console.error(`Errore durante il recupero del file da Cloudinary:`, error);
     return new NextResponse('Errore interno del server', { status: 500 });
   }
 }
