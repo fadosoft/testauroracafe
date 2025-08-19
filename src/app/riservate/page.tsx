@@ -97,12 +97,21 @@ export default function RiservatePage() {
                     const publicId = getPublicIdFromUrl(order.pdfUrl);
 
                     const handleDownload = () => {
+                      console.log('Tentativo di eliminazione per Order ID:', order.orderId);
+                      console.log('Public ID per Cloudinary:', publicId);
+
                       if (!publicId) {
                         alert('URL del PDF non valido, impossibile scaricare.');
                         return;
                       }
                       window.open(`/api/download-and-delete-pdf?public_id=${publicId}`, '_blank');
-                      setOrders(currentOrders => currentOrders.filter(o => o.orderId !== order.orderId));
+
+                      setOrders(currentOrders => {
+                        console.log('Ordini prima del filtro:', currentOrders);
+                        const updatedOrders = currentOrders.filter(o => o.orderId !== order.orderId);
+                        console.log('Ordini dopo il filtro:', updatedOrders);
+                        return updatedOrders;
+                      });
                     };
 
                     return (
