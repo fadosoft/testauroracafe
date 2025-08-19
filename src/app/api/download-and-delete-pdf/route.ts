@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       console.log(`File ${publicId} eliminato con successo da Cloudinary.`);
 
       // Estrai l'orderId dal publicId per la chiave KV
-      const orderId = publicId.replace('order-', '');
+      const orderId = publicId.replace('orders/order-', '');
       await kv.del(`order:${orderId}`);
       console.log(`URL PDF per ordine ${orderId} eliminato con successo da Vercel KV.`);
 
