@@ -101,6 +101,11 @@ export default function RiservatePage() {
             {orders.length > 0 ? (
               <div className="mt-4">
                 <p className="lead">Ordini disponibili:</p>
+                <div className="d-flex justify-content-center mb-3"> {/* Added margin-bottom */}
+                  <button onClick={handleDeleteAll} className="btn btn-danger btn-sm" disabled={loading}> {/* Changed to btn-sm */}
+                    {loading ? 'Eliminazione...' : 'Elimina Tutti i PDF'}
+                  </button>
+                </div>
                 <ul className="list-group mx-auto" style={{ maxWidth: '400px' }}>
                   {orders.map((order) => {
                     const getPublicIdFromUrl = (url: string) => {
@@ -154,14 +159,9 @@ export default function RiservatePage() {
           </div>
         )}
         <hr className="my-4" />
-        <div className="d-flex justify-content-center gap-3"> {/* Added a div for button grouping */}
-          <button onClick={handleDeleteAll} className="btn btn-danger btn-lg" disabled={loading}>
-            {loading ? 'Eliminazione...' : 'Elimina Tutti i PDF'}
-          </button>
-          <Link href="/" className="btn btn-secondary btn-lg">
-            Torna alla Home
-          </Link>
-        </div>
+        <Link href="/" className="btn btn-secondary btn-lg">
+          Torna alla Home
+        </Link>
       </div>
     </div>
   );
