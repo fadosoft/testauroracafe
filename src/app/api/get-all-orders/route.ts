@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
   try {
     // Recupera tutti gli ID degli ordini dalla lista
     const allOrderIds: string[] = await kv.lrange('all_order_ids', 0, -1);
+    console.log('Retrieved allOrderIds from KV:', allOrderIds);
     console.log('Retrieved allOrderIds:', allOrderIds);
 
     const orders = [];
