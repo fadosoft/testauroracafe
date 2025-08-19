@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
   try {
     // Recupera tutti gli ID degli ordini tramite pattern matching
     const orderIdKeys: string[] = await kv.keys('order_id:*');
+    console.log('Raw output of kv.keys("order_id:*"):', orderIdKeys);
     console.log('Retrieved orderIdKeys from KV:', orderIdKeys);
 
     const orders = [];
