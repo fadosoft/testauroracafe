@@ -108,7 +108,7 @@ export default function RiservatePage() {
 
                       setOrders(currentOrders => {
                         console.log('Ordini prima del filtro:', currentOrders);
-                        const updatedOrders = currentOrders.filter(o => o.orderId !== order.orderId);
+                        const updatedOrders = currentOrders.filter(o => String(o.orderId) !== String(order.orderId));
                         console.log('Ordini dopo il filtro:', updatedOrders);
                         return updatedOrders;
                       });
