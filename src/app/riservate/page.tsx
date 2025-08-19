@@ -25,7 +25,7 @@ export default function RiservatePage() {
       setErrorMessage('');
       setLoading(true);
       try {
-        const response = await fetch('/api/get-all-orders');
+        const response = await fetch('/api/get-all-orders', { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Errore nel recupero degli ordini.');
         }
