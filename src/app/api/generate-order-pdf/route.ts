@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
     // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
     await kv.set(`order:${orderId}`, pdfUrl);
     // Aggiungi l'ID dell'ordine a una lista di tutti gli ordini
-    await kv.rpush('all_order_ids', orderId);
+    await kv.set(`order_id:${orderId}`, 'true');
     console.log(`URL PDF per ordine ${orderId} salvato in Vercel KV: ${pdfUrl}`);
 
     return NextResponse.json({ message: 'PDF generato e caricato con successo!', pdfUrl });

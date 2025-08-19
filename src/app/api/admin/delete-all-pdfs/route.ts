@@ -10,20 +10,26 @@ cloudinary.config({
 
 export async function POST(req: NextRequest) {
   try {
-    // Recupera tutti gli ID degli ordini dalla lista
-    const allOrderIds: string[] = await kv.lrange('all_order_ids', 0, -1);
-    console.log(`Tentativo di eliminare ${allOrderIds.length} PDF.`);
+    // Recupera tutti gli ID degli ordini tramite pattern matching
+    const orderIdKeys: string[] = await kv.keys('order_id:*');
+    console.log(`Tentativo di eliminare ${orderIdKeys.length} PDF.`);
 
-    const deletionPromises = allOrderIds.map(async (orderId) => {
+    const deletionPromises = orderIdKeys.map(async (key) => {
+      const orderId = key.replace('order_id:', ''); // Estrai l'ID effettivo
       const publicId = `orders/order-${orderId}`;
       try {
         // Elimina da Cloudinary
         await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
         console.log(`Eliminato ${publicId} da Cloudinary.`);
 
-        // Elimina da Vercel KV
+        // Elimina da Vercel KV (chiave order:ID)
         await kv.del(`order:${orderId}`);
         console.log(`Eliminato order:${orderId} da Vercel KV.`);
+
+        // Elimina da Vercel KV (chiave order_id:ID)
+        await kv.del(key); // Elimina la chiave order_id:ID
+        console.log(`Eliminato ${key} da Vercel KV.`);
+
       } catch (error) {
         console.error(`Errore durante l'eliminazione di ${publicId}:`, error);
         // Continua anche se un'eliminazione fallisce
@@ -32,11 +38,7 @@ export async function POST(req: NextRequest) {
 
     await Promise.allSettled(deletionPromises);
 
-    // Svuota la lista principale degli ID degli ordini in Vercel KV
-    // Tentativo aggressivo di svuotare la lista
-    await kv.ltrim('all_order_ids', 1, 0); // Rimuove tutti gli elementi
-    await kv.del('all_order_ids'); // Poi elimina la chiave
-    console.log('Lista all_order_ids svuotata in Vercel KV.');
+    console.log('Tutti i riferimenti agli ordini sono stati eliminati da Vercel KV.');
 
     return NextResponse.json({ message: 'Tutti i PDF e i loro riferimenti sono stati eliminati.' }, { status: 200 });
   } catch (error: any) {

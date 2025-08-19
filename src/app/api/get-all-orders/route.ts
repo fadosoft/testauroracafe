@@ -3,13 +3,13 @@ import { kv } from '@vercel/kv';
 
 export async function GET(req: NextRequest) {
   try {
-    // Recupera tutti gli ID degli ordini dalla lista
-    const allOrderIds: string[] = await kv.lrange('all_order_ids', 0, -1);
-    console.log('Retrieved allOrderIds from KV:', allOrderIds);
-    console.log('Retrieved allOrderIds:', allOrderIds);
+    // Recupera tutti gli ID degli ordini tramite pattern matching
+    const orderIdKeys: string[] = await kv.keys('order_id:*');
+    console.log('Retrieved orderIdKeys from KV:', orderIdKeys);
 
     const orders = [];
-    for (const orderId of allOrderIds) {
+    for (const key of orderIdKeys) {
+      const orderId = key.replace('order_id:', ''); // Estrai l'ID effettivo
       const pdfUrl: string | null = await kv.get(`order:${orderId}`);
       if (pdfUrl) {
         orders.push({
