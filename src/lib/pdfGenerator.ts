@@ -59,12 +59,15 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
     }),
   });
 
+  console.log(`Risposta PDF.co - Status: ${response.status}`); // Log status
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`Risposta PDF.co - Errore: ${errorText}`); // Log error text
     throw new Error(`Errore API PDF.co: ${response.status} - ${errorText}`);
   }
 
   const jsonResponse = await response.json();
+  console.log('Risposta JSON da PDF.co:', jsonResponse); // Log full JSON response
   if (!jsonResponse.url) {
     throw new Error('Risposta API PDF.co non valida: URL del PDF non trovato.');
   }

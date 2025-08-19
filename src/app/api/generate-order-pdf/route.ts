@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
     const { formData, cartItems, orderTotal } = body;
     console.log('Received cartItems:', cartItems);
 
+    // Log della chiave API di PDF.co (solo per debug, rimuovere in produzione!)
+    console.log('PDF_CO_API_KEY (first 5 chars):', process.env.PDF_CO_API_KEY ? process.env.PDF_CO_API_KEY.substring(0, 5) : 'NOT_SET');
+
     if (!formData || !cartItems || !orderTotal) {
       return NextResponse.json({ error: 'Dati mancanti per la generazione del PDF.' }, { status: 400 });
     }
@@ -66,6 +69,7 @@ export async function POST(req: NextRequest) {
     `;
 
     const pdfUrl = await generatePdf(htmlContent, orderId);
+    console.log(`PDF URL generato da generatePdf: ${pdfUrl}`); // Log the generated URL
 
     // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
     await kv.set(`order:${orderId}`, pdfUrl);
@@ -75,7 +79,15 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'PDF generato e caricato con successo!', pdfUrl });
   } catch (error: any) {
-    console.error('Errore nella generazione del PDF:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('Errore nella generazione del PDF (catch block):', error);
+    if (error instanceof Error) {
+      console.error('Dettagli errore:', error.message);
+      if (error.stack) {
+        console.error('Stack trace:', error.stack);
+      }
+    } else {
+      console.error('Errore sconosciuto:', error);
+    }
+    return NextResponse.json({ error: error.message || 'Errore sconosciuto nella generazione del PDF' }, { status: 500 });
   }
 }
