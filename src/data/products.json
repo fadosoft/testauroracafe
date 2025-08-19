@@ -130,5 +130,59 @@
         "stock_quantity": 10
       }
     ]
+  },
+  {
+    "name": "Toraldo Cremosa Nespresso",
+    "description": "n questa miscela c’è tutto l’inconfondibile gusto di un espresso forte e deciso dall’aroma pieno e fragrante dal corpo ricco. Cremosità persistente e ben compatta.",
+    "category": "Capsule nespresso",
+    "image": "/images/Toraldo_Nespresso.webp",
+    "packages": [
+      {
+        "sku": "AUR-CAF-007-100",
+        "size": "100 capsule",
+        "price": 21.7,
+        "stock_quantity": 1
+      },
+      {
+        "sku": "AUR-CAF-00-200",
+        "size": "200 capsule",
+        "price": 37.2,
+        "stock_quantity": 1
+      },
+      {
+        "sku": "AUR-CAF-00-400",
+        "size": "400 capsule",
+        "price": 70.8,
+        "stock_quantity": 1
+      },
+      {
+        "sku": "AUR-CAF-00-600",
+        "size": "600 capsule",
+        "price": 103.2,
+        "stock_quantity": 1
+      }
+    ],
+    "id": 1755612467072
+  },
+  {
+    "name": "Verzi Miscela Intenso",
+    "description": "Composta dai più dolci e pregiati caffè che ne fanno risaltare il gusto particolarmente aromatico, questa miscela è creata per ottenere un caffè corposo dalla crema densa e permanente",
+    "category": "Capsule dolcegusto",
+    "image": "/images/Capsule_verzi_Nespresso.webp",
+    "packages": [
+      {
+        "sku": "AUR-CAF-008-100",
+        "size": "100 capsule",
+        "price": 21.8,
+        "stock_quantity": 1
+      },
+      {
+        "sku": "AUR-CAF-007-200",
+        "size": "200 capsule37,20",
+        "price": 37.2,
+        "stock_quantity": 1
+      }
+    ],
+    "id": 1755612945705
   }
 ]
