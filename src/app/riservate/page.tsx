@@ -49,6 +49,29 @@ export default function RiservatePage() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Sei sicuro di voler eliminare TUTTI i PDF? Questa operazione è irreversibile.')) {
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/delete-all-pdfs', {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Errore durante l\'eliminazione di tutti i PDF.');
+      }
+      setOrders([]); // Clear the frontend list
+      setErrorMessage('');
+      alert('Tutti i PDF sono stati eliminati con successo!');
+    } catch (error: any) {
+      console.error('Errore nell\'eliminazione di tutti i PDF:', error);
+      setErrorMessage(`Errore nell\'eliminazione di tutti i PDF: ${error.message || 'Errore sconosciuto'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container mt-5 text-center">
       <div className="py-5">
@@ -131,9 +154,14 @@ export default function RiservatePage() {
           </div>
         )}
         <hr className="my-4" />
-        <Link href="/" className="btn btn-secondary btn-lg">
-          Torna alla Home
-        </Link>
+        <div className="d-flex justify-content-center gap-3"> {/* Added a div for button grouping */}
+          <button onClick={handleDeleteAll} className="btn btn-danger btn-lg" disabled={loading}>
+            {loading ? 'Eliminazione...' : 'Elimina Tutti i PDF'}
+          </button>
+          <Link href="/" className="btn btn-secondary btn-lg">
+            Torna alla Home
+          </Link>
+        </div>
       </div>
     </div>
   );
