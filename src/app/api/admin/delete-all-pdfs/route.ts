@@ -39,6 +39,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Tutti i PDF e i loro riferimenti sono stati eliminati.' }, { status: 200 });
   } catch (error: any) {
     console.error("PDF deletion error:", error);
-    return NextResponse.json({ error: 'Errore interno del server durante l'eliminazione.' }, { status: 500 });
+    return NextResponse.json({ error: 'Errore interno del server durante l\'eliminazione.' }, { status: 500 });
   }
 }
