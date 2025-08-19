@@ -96,8 +96,8 @@ export default function RiservatePage() {
                     };
                     const publicId = getPublicIdFromUrl(order.pdfUrl);
 
-                    const handleDownload = () => {
-                      console.log('Tentativo di eliminazione per Order ID:', order.orderId);
+                    const handleDownload = (orderIdToFilter: string) => {
+                      console.log('Tentativo di eliminazione per Order ID:', orderIdToFilter);
                       console.log('Public ID per Cloudinary:', publicId);
 
                       if (!publicId) {
@@ -108,7 +108,7 @@ export default function RiservatePage() {
 
                       setOrders(currentOrders => {
                         console.log('Ordini prima del filtro:', currentOrders);
-                        const updatedOrders = currentOrders.filter(o => String(o.orderId) !== String(order.orderId));
+                        const updatedOrders = currentOrders.filter(o => String(o.orderId) !== String(orderIdToFilter));
                         console.log('Ordini dopo il filtro:', updatedOrders);
                         return updatedOrders;
                       });
@@ -117,7 +117,7 @@ export default function RiservatePage() {
                     return (
                       <li key={order.orderId} className="list-group-item d-flex justify-content-between align-items-center">
                         Ordine ID: {order.orderId}
-                        <button onClick={handleDownload} className="btn btn-sm btn-success">
+                        <button onClick={() => handleDownload(order.orderId)} className="btn btn-sm btn-success">
                           Scarica e Rimuovi
                         </button>
                       </li>
