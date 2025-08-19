@@ -1,6 +1,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
+import { kv } from '@vercel/kv';
 
 // Configura Cloudinary con le credenziali dalle variabili d'ambiente
 // Assicurati che queste variabili siano impostate nel tuo ambiente Vercel
@@ -44,8 +45,14 @@ export async function GET(request: NextRequest) {
     try {
       await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
       console.log(`File ${publicId} eliminato con successo da Cloudinary.`);
+
+      // Estrai l'orderId dal publicId per la chiave KV
+      const orderId = publicId.replace('order-', '');
+      await kv.del(`order:${orderId}`);
+      console.log(`URL PDF per ordine ${orderId} eliminato con successo da Vercel KV.`);
+
     } catch (destroyError) {
-      console.error(`Errore durante l'eliminazione del file ${publicId} da Cloudinary:`, destroyError);
+      console.error(`Errore durante l'eliminazione del file ${publicId} da Cloudinary o Vercel KV:`, destroyError);
       // Non blocchiamo il download se l'eliminazione fallisce, ma logghiamo l'errore.
     }
 
