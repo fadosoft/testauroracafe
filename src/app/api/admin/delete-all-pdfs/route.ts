@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
     await Promise.allSettled(deletionPromises);
 
     // Svuota la lista principale degli ID degli ordini in Vercel KV
-    await kv.del('all_order_ids');
+    // Tentativo aggressivo di svuotare la lista
+    await kv.ltrim('all_order_ids', 1, 0); // Rimuove tutti gli elementi
+    await kv.del('all_order_ids'); // Poi elimina la chiave
     console.log('Lista all_order_ids svuotata in Vercel KV.');
 
     return NextResponse.json({ message: 'Tutti i PDF e i loro riferimenti sono stati eliminati.' }, { status: 200 });
