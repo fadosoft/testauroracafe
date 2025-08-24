@@ -1,26 +1,27 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import Link from 'next/link';
 
+// Interfaccia aggiornata per corrispondere alla nuova risposta dell'API
 interface Order {
-  orderId: string;
+  publicId: string;
   pdfUrl: string;
 }
 
 export default function RiservatePage() {
-  const router = useRouter();
   const [secretKeyInput, setSecretKeyInput] = useState('');
   const [showContent, setShowContent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
 
-  const CORRECT_SECRET_KEY = 'RISERVATE_SECRET'; // Placeholder: In a real app, validate this via API
+  // Questa dovrebbe essere una chiave segreta vera, salvata nelle variabili d'ambiente
+  const CORRECT_SECRET_KEY = 'RISERVATE_SECRET'; 
 
   const handleSecretKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // In un'app reale, invieresti la chiave a un'API per la validazione
     if (secretKeyInput === CORRECT_SECRET_KEY) {
       setErrorMessage('');
       setLoading(true);
@@ -32,12 +33,11 @@ export default function RiservatePage() {
         const data = await response.json();
         if (data.orders && data.orders.length > 0) {
           setOrders(data.orders);
-          setShowContent(true);
         } else {
-          setErrorMessage('Nessun ordine trovato. Generane uno prima.');
+          setOrders([]); // Assicura che la lista ordini sia vuota se non ne trova
         }
+        setShowContent(true); // Mostra l'area contenuto in ogni caso
       } catch (error: any) {
-        console.error('Errore nel recupero ordini:', error);
         setErrorMessage(`Errore nel recupero ordini: ${error.message || 'Errore sconosciuto'}`);
       } finally {
         setLoading(false);
@@ -45,28 +45,55 @@ export default function RiservatePage() {
     } else {
       setErrorMessage('Chiave segreta non valida. Riprova.');
       setShowContent(false);
-      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (publicIdToDelete: string) => {
+    if (!window.confirm(`Sei sicuro di voler eliminare l\'ordine ${publicIdToDelete}? L\'azione è irreversibile.`)) {
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/admin/orders/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          // La rotta di cancellazione dovrebbe essere protetta, qui si assume che l'autenticazione sia gestita
+        },
+        body: JSON.stringify({ fileName: publicIdToDelete }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Errore durante l\'eliminazione.');
+      }
+
+      // Rimuove l'ordine cancellato dalla lista per aggiornare l'interfaccia
+      setOrders(currentOrders => currentOrders.filter(o => o.publicId !== publicIdToDelete));
+      alert('Ordine eliminato con successo!');
+
+    } catch (error: any) {
+      alert(`Errore durante l\'eliminazione: ${error.message}`);
     }
   };
 
   const handleDeleteAll = async () => {
-    if (!window.confirm('Sei sicuro di voler eliminare TUTTI i PDF? Questa operazione è irreversibile.')) {
+    if (!window.confirm('Sei sicuro di voler eliminare TUTTI gli ordini? Questa operazione è irreversibile.')) {
       return;
     }
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/delete-all-pdfs', {
-        method: 'POST',
+      const response = await fetch('/api/admin/orders/delete', {
+        method: 'DELETE',
+        // Anche qui, l'autenticazione dovrebbe essere gestita
       });
       if (!response.ok) {
-        throw new Error('Errore durante l\'eliminazione di tutti i PDF.');
+        throw new Error('Errore durante l\'eliminazione di tutti gli ordini.');
       }
-      setOrders([]); // Clear the frontend list
-      setErrorMessage('');
-      alert('Tutti i PDF sono stati eliminati con successo!');
+      setOrders([]); // Svuota la lista ordini
+      alert('Tutti gli ordini sono stati eliminati con successo!');
     } catch (error: any) {
-      console.error('Errore nell\'eliminazione di tutti i PDF:', error);
-      setErrorMessage(`Errore nell\'eliminazione di tutti i PDF: ${error.message || 'Errore sconosciuto'}`);
+      alert(`Errore nell\'eliminazione di tutti gli ordini: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -97,65 +124,32 @@ export default function RiservatePage() {
           </form>
         ) : (
           <div>
-            <p className="lead">Benvenuto nell&apos;area riservata!</p>
+            <p className="lead">Benvenuto! Ecco gli ordini generati.</p>
             {orders.length > 0 ? (
               <div className="mt-4">
-                <p className="lead">Ordini disponibili:</p>
-                <div className="d-flex justify-content-center mb-3"> {/* Added margin-bottom */}
-                  <button onClick={handleDeleteAll} className="btn btn-danger btn-sm" disabled={loading}> {/* Changed to btn-sm */}
-                    {loading ? 'Eliminazione...' : 'Elimina Tutti i PDF'}
+                <div className="d-flex justify-content-center mb-3">
+                  <button onClick={handleDeleteAll} className="btn btn-danger" disabled={loading}>
+                    {loading ? 'Eliminazione...' : 'Elimina Tutti gli Ordini'}
                   </button>
                 </div>
-                <ul className="list-group mx-auto" style={{ maxWidth: '400px' }}>
-                  {orders.map((order) => {
-                    const getPublicIdFromUrl = (url: string) => {
-                      try {
-                        const parts = url.split('/');
-                        const uploadIndex = parts.indexOf('upload');
-                        if (uploadIndex !== -1 && parts.length > uploadIndex + 2) {
-                          const fileNameWithExt = parts[uploadIndex + 2];
-                          const fileName = fileNameWithExt.split('.')[0];
-                          return fileName;
-                        }
-                        return null;
-                      } catch {
-                        return null;
-                      }
-                    };
-                    const publicId = getPublicIdFromUrl(order.pdfUrl);
-                    console.log('Public ID in frontend:', publicId); // LOGGING
-
-                    const handleDownload = (orderIdToFilter: string) => {
-                      console.log('Tentativo di eliminazione per Order ID:', orderIdToFilter);
-                      console.log('Public ID per Cloudinary:', publicId);
-
-                      if (!publicId) {
-                        alert('URL del PDF non valido, impossibile scaricare.');
-                        return;
-                      }
-                      window.open(`/api/download-and-delete-pdf?public_id=${publicId}`, '_blank');
-
-                      setOrders(currentOrders => {
-                        console.log('Ordini prima del filtro:', currentOrders);
-                        const updatedOrders = currentOrders.filter(o => String(o.orderId) !== String(orderIdToFilter));
-                        console.log('Ordini dopo il filtro:', updatedOrders);
-                        return updatedOrders;
-                      });
-                    };
-
-                    return (
-                      <li key={order.orderId} className="list-group-item d-flex justify-content-between align-items-center">
-                        Ordine ID: {order.orderId}
-                        <button onClick={() => handleDownload(order.orderId)} className="btn btn-sm btn-success">
-                          Scarica e Rimuovi
+                <ul className="list-group mx-auto" style={{ maxWidth: '600px' }}>
+                  {orders.map((order) => (
+                    <li key={order.publicId} className="list-group-item d-flex justify-content-between align-items-center">
+                      <span className="text-truncate" style={{ maxWidth: '300px' }}>{order.publicId}</span>
+                      <div>
+                        <a href={order.pdfUrl} className="btn btn-sm btn-success me-2" target="_blank" rel="noopener noreferrer">
+                          Scarica
+                        </a>
+                        <button onClick={() => handleDelete(order.publicId)} className="btn btn-sm btn-danger">
+                          Elimina
                         </button>
-                      </li>
-                    );
-                  })}
+                      </div>
+                    </li>
+                  ))}
                 </ul>
               </div>
             ) : (
-              <p className="lead text-warning">Nessun ordine disponibile al momento.</p>
+              <p className="lead text-info mt-4">Nessun ordine disponibile al momento.</p>
             )}
           </div>
         )}
