@@ -14,7 +14,7 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         public_id: `order-${orderId}`, // Nome del file
-        resource_type: 'image', // Tratta il file come un'immagine (per PDF)
+        resource_type: 'raw', // Tratta il file come un file generico (raw)
       },
       (error, result) => {
         if (error) {
