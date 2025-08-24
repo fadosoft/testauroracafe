@@ -133,7 +133,9 @@ export default function RiservatePage() {
                   {loading ? 'Eliminazione...' : 'Elimina Tutti'}
                 </button>
               </div>
-              {orders.length > 0 ? (
+              {isRefreshing ? (
+                <p className="lead text-info mt-4">Caricamento ordini...</p>
+              ) : orders.length > 0 ? (
                 <ul className="list-group mx-auto" style={{ maxWidth: '600px' }}>
                   {orders.map((order) => (
                     <li key={order.publicId} className="list-group-item d-flex justify-content-between align-items-center">
