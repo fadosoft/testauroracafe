@@ -14,11 +14,20 @@ export async function POST(req: NextRequest) {
     // Log della chiave API di PDF.co (solo per debug, rimuovere in produzione!)
     console.log('PDF_CO_API_KEY (first 5 chars):', process.env.PDF_CO_API_KEY ? process.env.PDF_CO_API_KEY.substring(0, 5) : 'NOT_SET');
 
-    if (!formData || !cartItems || !orderTotal) {
+    if (!formData || !cartItems || !orderTotal || !formData.name) {
       return NextResponse.json({ error: 'Dati mancanti per la generazione del PDF.' }, { status: 400 });
     }
 
-    const orderId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; // ID ordine univoco
+    // --- Inizio Logica Nome File --- 
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    const sanitizedName = formData.name
+      .toLowerCase()
+      .replace(/\s+/g, '_') // Sostituisce spazi con underscore
+      .replace(/[^a-z0-9_-]/g, ''); // Rimuove caratteri non alfanumerici
+    
+    const publicId = `ordine_${sanitizedName}_${uniqueId}`;
+    // --- Fine Logica Nome File ---
+
     const orderDate = new Date().toLocaleDateString('it-IT', {
       year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
@@ -27,7 +36,7 @@ export async function POST(req: NextRequest) {
     let htmlContent = `
       <h1>Conferma Ordine Aurora Café</h1>
       <p><strong>Data Ordine:</strong> ${orderDate}</p>
-      <p><strong>ID Ordine:</strong> #${orderId}</p>
+      <p><strong>ID Ordine:</strong> #${publicId}</p> 
       <hr>
       <h2>Dettagli Cliente</h2>
       <p><strong>Nome:</strong> ${formData.name}</p>
@@ -68,14 +77,14 @@ export async function POST(req: NextRequest) {
       <p>Grazie per il tuo acquisto!</p>
     `;
 
-    const { pdfUrl, pdfBuffer } = await generatePdf(htmlContent, orderId); // MODIFIED CALL
-    console.log(`PDF URL generato da generatePdf: ${pdfUrl}`); // Log the generated URL
+    const { pdfUrl, pdfBuffer } = await generatePdf(htmlContent, publicId);
+    console.log(`PDF URL generato da generatePdf: ${pdfUrl}`);
 
     // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
-    await kv.set(`order:${orderId}`, pdfUrl);
+    await kv.set(`order:${publicId}`, pdfUrl);
     // Aggiungi l'ID dell'ordine a una lista di tutti gli ordini
-    await kv.set(`order_id:${orderId}`, 'true');
-    console.log(`URL PDF per ordine ${orderId} salvato in Vercel KV: ${pdfUrl}`);
+    await kv.set(`order_id:${publicId}`, 'true');
+    console.log(`URL PDF per ordine ${publicId} salvato in Vercel KV: ${pdfUrl}`);
 
     // --- Email Sending Logic ---
     const adminEmail: string | null = await kv.get('admin_email');
@@ -91,16 +100,16 @@ export async function POST(req: NextRequest) {
       const mailOptions = {
         from: process.env.EMAIL_USER,
         to: adminEmail,
-        subject: `Nuovo Ordine Aurora Café - #${orderId}`,
+        subject: `Nuovo Ordine Aurora Café - #${publicId}`,
         html: `
           <p>Hai ricevuto un nuovo ordine da ${formData.name} (${formData.email}).</p>
-          <p><strong>ID Ordine:</strong> #${orderId}</p>
+          <p><strong>ID Ordine:</strong> #${publicId}</p>
           <p><strong>Totale:</strong> €${orderTotal}</p>
           <p>Alleghiamo il PDF dell'ordine.</p>
         `,
         attachments: [
           {
-            filename: `ordine_${orderId}.pdf`,
+            filename: `${publicId}.pdf`,
             content: pdfBuffer,
             contentType: 'application/pdf',
           },

@@ -9,11 +9,11 @@ cloudinary.config({
 });
 
 // Funzione per caricare un buffer su Cloudinary
-const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> => {
+const uploadToCloudinary = (buffer: Buffer, publicId: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        public_id: `order-${orderId}`, // Nome del file
+        public_id: publicId, // Usa direttamente il publicId fornito
         resource_type: 'raw', // Tratta il file come un file generico (raw)
       },
       (error, result) => {
@@ -29,13 +29,14 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
     );
 
     const readableStream = new Readable();
+    readableStream._read = () => {}; // Aggiunta necessaria per la compatibilità dello stream
     readableStream.push(buffer);
     readableStream.push(null);
     readableStream.pipe(uploadStream);
   });
 };
 
-export async function generatePdf(htmlContent: string, orderId: string): Promise<{ pdfUrl: string, pdfBuffer: Buffer }> {
+export async function generatePdf(htmlContent: string, publicId: string): Promise<{ pdfUrl: string, pdfBuffer: Buffer }> {
   // Sostituisci 'YOUR_PDF_CO_API_KEY' con la tua chiave API di PDF.co
   // È FORTEMENTE RACCOMANDATO DI USARE UNA VARIABILE D'AMBIENTE PER LA CHIAVE API (es. process.env.PDF_CO_API_KEY)
   const pdfCoApiKey = process.env.PDF_CO_API_KEY; // <-- SOSTITUISCI QUESTO
@@ -53,7 +54,7 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
 
     body: JSON.stringify({
       html: htmlContent,
-      name: `order-${orderId}.pdf`,
+      name: `${publicId}.pdf`,
       async: false // Imposta a true se vuoi un'operazione asincrona e ricevere un URL per il download
     }),
   });
@@ -79,6 +80,7 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
 
   const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
-  const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
+  const pdfUrl = await uploadToCloudinary(pdfBuffer, publicId);
   return { pdfUrl, pdfBuffer };
 }
+
