@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { kv } from '@vercel/kv';
 
-// Configura Cloudinary
+// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -11,9 +11,9 @@ cloudinary.config({
 
 // Funzione di autorizzazione comune
 async function authorizeRequest(req: NextRequest) {
-  const secretKey = process.env.ADMIN_SECRET_KEY;
+  const secretKey = process.env.RISERVATE_SECRET; // Usa la chiave della pagina riservata
   if (!secretKey) {
-    throw new Error('ADMIN_SECRET_KEY non configurata.');
+    throw new Error('RISERVATE_SECRET non configurata.');
   }
   const authHeader = req.headers.get('authorization');
   if (!authHeader || authHeader !== `Bearer ${secretKey}`) {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Nome del file non fornito.' }, { status: 400 });
     }
 
-    const publicId = fileName;
+    const publicId = fileName; 
 
     // Cancella da Cloudinary
     await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
