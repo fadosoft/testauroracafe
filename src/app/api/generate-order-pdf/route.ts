@@ -81,8 +81,10 @@ export async function POST(req: NextRequest) {
     console.log(`PDF URL generato da generatePdf: ${pdfUrl}`);
 
     // Salva l'URL del PDF e aggiungi l'ID all'indice degli ordini
+    console.log(`Tentativo di salvataggio per publicId: ${publicId}`);
     await kv.set(`order:${publicId}`, pdfUrl);
-    await kv.sadd('orders_index', publicId); // Aggiunge a un set per un recupero affidabile
+    const saddResult = await kv.sadd('orders_index', publicId); // Aggiunge a un set per un recupero affidabile
+    console.log(`Risultato di SADD per ${publicId}:`, saddResult);
     console.log(`Ordine ${publicId} salvato e aggiunto all\'indice.`);
 
     // --- Email Sending Logic ---
