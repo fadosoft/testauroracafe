@@ -13,35 +13,39 @@ export default function RiservatePage() {
   const [secretKeyInput, setSecretKeyInput] = useState('');
   const [showContent, setShowContent] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // Per il login iniziale
+  const [isRefreshing, setIsRefreshing] = useState(false); // Per l'aggiornamento
   const [orders, setOrders] = useState<Order[]>([]);
 
-  // Questa dovrebbe essere una chiave segreta vera, salvata nelle variabili d'ambiente
-  const CORRECT_SECRET_KEY = 'RISERVATE_SECRET'; 
+  const CORRECT_SECRET_KEY = 'RISERVATE_SECRET';
+
+  // Funzione riutilizzabile per caricare gli ordini
+  const fetchOrders = async () => {
+    setIsRefreshing(true);
+    setErrorMessage('');
+    try {
+      const response = await fetch('/api/get-all-orders', { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error('Errore nel recupero degli ordini.');
+      }
+      const data = await response.json();
+      if (data.orders) {
+        setOrders(data.orders);
+      }
+    } catch (error: any) {
+      setErrorMessage(`Errore nel recupero ordini: ${error.message || 'Errore sconosciuto'}`);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleSecretKeySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In un'app reale, invieresti la chiave a un'API per la validazione
     if (secretKeyInput === CORRECT_SECRET_KEY) {
-      setErrorMessage('');
       setLoading(true);
-      try {
-        const response = await fetch('/api/get-all-orders', { cache: 'no-store' });
-        if (!response.ok) {
-          throw new Error('Errore nel recupero degli ordini.');
-        }
-        const data = await response.json();
-        if (data.orders && data.orders.length > 0) {
-          setOrders(data.orders);
-        } else {
-          setOrders([]); // Assicura che la lista ordini sia vuota se non ne trova
-        }
-        setShowContent(true); // Mostra l'area contenuto in ogni caso
-      } catch (error: any) {
-        setErrorMessage(`Errore nel recupero ordini: ${error.message || 'Errore sconosciuto'}`);
-      } finally {
-        setLoading(false);
-      }
+      await fetchOrders();
+      setLoading(false);
+      setShowContent(true);
     } else {
       setErrorMessage('Chiave segreta non valida. Riprova.');
       setShowContent(false);
@@ -49,29 +53,21 @@ export default function RiservatePage() {
   };
 
   const handleDelete = async (publicIdToDelete: string) => {
-    if (!window.confirm(`Sei sicuro di voler eliminare l\'ordine ${publicIdToDelete}? L\'azione è irreversibile.`)) {
+    if (!window.confirm(`Sei sicuro di voler eliminare l订单 ${publicIdToDelete}? L'azione è irreversibile.`)) {
       return;
     }
-    
     try {
       const response = await fetch('/api/admin/orders/delete', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // La rotta di cancellazione dovrebbe essere protetta, qui si assume che l'autenticazione sia gestita
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fileName: publicIdToDelete }),
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Errore durante l\'eliminazione.');
       }
-
-      // Rimuove l'ordine cancellato dalla lista per aggiornare l'interfaccia
       setOrders(currentOrders => currentOrders.filter(o => o.publicId !== publicIdToDelete));
       alert('Ordine eliminato con successo!');
-
     } catch (error: any) {
       alert(`Errore durante l\'eliminazione: ${error.message}`);
     }
@@ -83,14 +79,11 @@ export default function RiservatePage() {
     }
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/orders/delete', {
-        method: 'DELETE',
-        // Anche qui, l'autenticazione dovrebbe essere gestita
-      });
+      const response = await fetch('/api/admin/orders/delete', { method: 'DELETE' });
       if (!response.ok) {
         throw new Error('Errore durante l\'eliminazione di tutti gli ordini.');
       }
-      setOrders([]); // Svuota la lista ordini
+      setOrders([]);
       alert('Tutti gli ordini sono stati eliminati con successo!');
     } catch (error: any) {
       alert(`Errore nell\'eliminazione di tutti gli ordini: ${error.message}`);
@@ -125,13 +118,17 @@ export default function RiservatePage() {
         ) : (
           <div>
             <p className="lead">Benvenuto! Ecco gli ordini generati.</p>
-            {orders.length > 0 ? (
-              <div className="mt-4">
-                <div className="d-flex justify-content-center mb-3">
-                  <button onClick={handleDeleteAll} className="btn btn-danger" disabled={loading}>
-                    {loading ? 'Eliminazione...' : 'Elimina Tutti gli Ordini'}
-                  </button>
-                </div>
+            {errorMessage && <p className="text-danger mt-2">{errorMessage}</p>}
+            <div className="mt-4">
+              <div className="d-flex justify-content-center gap-2 mb-3">
+                <button onClick={fetchOrders} className="btn btn-primary" disabled={isRefreshing}>
+                  {isRefreshing ? 'Aggiornamento...' : 'Aggiorna Lista'}
+                </button>
+                <button onClick={handleDeleteAll} className="btn btn-danger" disabled={loading || orders.length === 0}>
+                  {loading ? 'Eliminazione...' : 'Elimina Tutti'}
+                </button>
+              </div>
+              {orders.length > 0 ? (
                 <ul className="list-group mx-auto" style={{ maxWidth: '600px' }}>
                   {orders.map((order) => (
                     <li key={order.publicId} className="list-group-item d-flex justify-content-between align-items-center">
@@ -147,10 +144,10 @@ export default function RiservatePage() {
                     </li>
                   ))}
                 </ul>
-              </div>
-            ) : (
-              <p className="lead text-info mt-4">Nessun ordine disponibile al momento.</p>
-            )}
+              ) : (
+                <p className="lead text-info mt-4">Nessun ordine disponibile al momento.</p>
+              )}
+            </div>
           </div>
         )}
         <hr className="my-4" />
