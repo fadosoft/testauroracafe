@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       const publicId = `orders/order-${orderId}`;
       try {
         // Elimina da Cloudinary
-        await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
         console.log(`Eliminato ${publicId} da Cloudinary.`);
 
         // Elimina da Vercel KV (chiave order:ID)

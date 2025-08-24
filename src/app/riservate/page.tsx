@@ -111,11 +111,11 @@ export default function RiservatePage() {
                     const getPublicIdFromUrl = (url: string) => {
                       try {
                         const parts = url.split('/');
-                        const ordersIndex = parts.indexOf('orders');
-                        if (ordersIndex !== -1 && parts.length > ordersIndex + 1) {
-                          const fileNameWithExt = parts[ordersIndex + 1];
+                        const uploadIndex = parts.indexOf('upload');
+                        if (uploadIndex !== -1 && parts.length > uploadIndex + 2) {
+                          const fileNameWithExt = parts[uploadIndex + 2];
                           const fileName = fileNameWithExt.split('.')[0];
-                          return `orders/${fileName}`;
+                          return fileName;
                         }
                         return null;
                       } catch {
@@ -123,6 +123,7 @@ export default function RiservatePage() {
                       }
                     };
                     const publicId = getPublicIdFromUrl(order.pdfUrl);
+                    console.log('Public ID in frontend:', publicId); // LOGGING
 
                     const handleDownload = (orderIdToFilter: string) => {
                       console.log('Tentativo di eliminazione per Order ID:', orderIdToFilter);

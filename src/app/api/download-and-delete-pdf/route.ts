@@ -14,6 +14,7 @@ cloudinary.config({
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const publicId = searchParams.get('public_id'); // Ora usiamo il public_id di Cloudinary
+  console.log('Public ID in backend:', publicId); // LOGGING
 
   if (!publicId) {
     return new NextResponse('ID pubblico del file mancante', { status: 400 });
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
   try {
     // Costruisci l'URL del file su Cloudinary
     const cloudinaryUrl = cloudinary.url(publicId, { resource_type: 'raw' });
+    console.log('Cloudinary URL:', cloudinaryUrl); // LOGGING
 
     // Scarica il file da Cloudinary
     const pdfResponse = await fetch(cloudinaryUrl);
@@ -47,9 +49,10 @@ export async function GET(request: NextRequest) {
       console.log(`File ${publicId} eliminato con successo da Cloudinary.`);
 
       // Estrai l'orderId dal publicId per la chiave KV
-      const orderId = publicId.replace('orders/order-', '');
+      const orderId = publicId.replace('order-', '');
       await kv.del(`order:${orderId}`);
-      console.log(`URL PDF per ordine ${orderId} eliminato con successo da Vercel KV.`);
+      await kv.del(`order_id:${orderId}`); // Rimuovi anche la chiave dall'elenco degli ordini
+      console.log(`Dati per ordine ${orderId} eliminati con successo da Vercel KV.`);
 
     } catch (destroyError) {
       console.error(`Errore durante l'eliminazione del file ${publicId} da Cloudinary o Vercel KV:`, destroyError);

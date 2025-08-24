@@ -13,9 +13,8 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        folder: 'orders', // Salva i PDF in una cartella 'orders' su Cloudinary
         public_id: `order-${orderId}`, // Nome del file
-        resource_type: 'raw', // Tratta il file come un file generico
+        resource_type: 'image', // Tratta il file come un'immagine (per PDF)
       },
       (error, result) => {
         if (error) {
@@ -36,7 +35,7 @@ const uploadToCloudinary = (buffer: Buffer, orderId: string): Promise<string> =>
   });
 };
 
-export async function generatePdf(htmlContent: string, orderId: string): Promise<string> {
+export async function generatePdf(htmlContent: string, orderId: string): Promise<{ pdfUrl: string, pdfBuffer: Buffer }> {
   // Sostituisci 'YOUR_PDF_CO_API_KEY' con la tua chiave API di PDF.co
   // È FORTEMENTE RACCOMANDATO DI USARE UNA VARIABILE D'AMBIENTE PER LA CHIAVE API (es. process.env.PDF_CO_API_KEY)
   const pdfCoApiKey = process.env.PDF_CO_API_KEY; // <-- SOSTITUISCI QUESTO
@@ -81,5 +80,5 @@ export async function generatePdf(htmlContent: string, orderId: string): Promise
   const pdfBuffer = Buffer.from(await pdfResponse.arrayBuffer());
 
   const pdfUrl = await uploadToCloudinary(pdfBuffer, orderId);
-  return pdfUrl;
+  return { pdfUrl, pdfBuffer };
 }

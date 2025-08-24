@@ -3,6 +3,7 @@
 import { useCart } from '@/context/CartContext';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import CustomAlert from '@/components/CustomAlert'; // Importa il componente Alert
 
 export default function CheckoutPage() {
   const { cartItems, getCartTotal, clearCart } = useCart();
@@ -15,6 +16,8 @@ export default function CheckoutPage() {
     zip: '',
     country: 'Italia',
   });
+  const [error, setError] = useState<string | null>(null); // Stato per il messaggio di errore
+  const [isLoading, setIsLoading] = useState(false); // Stato per il caricamento
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,6 +26,8 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError(null); // Resetta l'errore precedente
     console.log("Ordine inviato:", { formData, cartItems });
 
     try {
@@ -40,23 +45,21 @@ export default function CheckoutPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error("Errore nella generazione del PDF:", errorData.error);
-        // Potresti voler mostrare un messaggio di errore all'utente qui
-        alert("Si è verificato un errore durante la generazione del PDF. Riprova più tardi.");
+        const errorMessage = errorData.error || "Si è verificato un errore durante la creazione dell'ordine.";
+        console.error("Errore nella generazione del PDF:", errorMessage);
+        setError(errorMessage); // Mostra l'errore all'utente
       } else {
         console.log("Chiamata API per generazione PDF completata con successo.");
         const successData = await response.json();
         console.log("Successo:", successData);
-        clearCart(); // Clear cart on success
-        // Passa l'URL del PDF alla pagina di ringraziamento
+        clearCart(); // Svuota il carrello solo in caso di successo
         router.push(`/thank-you?pdfUrl=${encodeURIComponent(successData.pdfUrl)}`);
       }
     } catch (error) {
       console.error("Errore durante la chiamata API per generazione PDF:", error);
-      alert("Si è verificato un errore di rete. Riprova più tardi.");
-      clearCart(); // Clear cart even on error
-      // In caso di errore, reindirizza comunque alla pagina di ringraziamento, ma senza l'URL del PDF
-      router.push('/thank-you');
+      setError("Si è verificato un errore di rete. Controlla la tua connessione e riprova.");
+    } finally {
+      setIsLoading(false); // Disabilita lo stato di caricamento
     }
   };
 
@@ -72,6 +75,7 @@ export default function CheckoutPage() {
   return (
     <div className="container mt-5">
       <h1>Checkout</h1>
+      {error && <CustomAlert type="danger" message={error} />} 
       <div className="row">
         {/* Riepilogo Ordine */}
         <div className="col-md-5 order-md-2 mb-4">
@@ -100,6 +104,7 @@ export default function CheckoutPage() {
         <div className="col-md-7 order-md-1">
           <h4 className="mb-3">Indirizzo di spedizione</h4>
           <form onSubmit={handleSubmit} className="needs-validation" noValidate>
+            {/* ... i tuoi campi del form ... */}
             <div className="row">
               <div className="col-md-12 mb-3">
                 <label htmlFor="name">Nome completo</label>
@@ -134,8 +139,8 @@ export default function CheckoutPage() {
 
             <hr className="mb-4" />
 
-            <button className="btn btn-primary btn-lg w-100" type="submit">
-              Completa Ordine
+            <button className="btn btn-primary btn-lg w-100" type="submit" disabled={isLoading}>
+              {isLoading ? 'Elaborazione...' : 'Completa Ordine'}
             </button>
           </form>
         </div>

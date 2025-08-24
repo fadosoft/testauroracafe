@@ -1,8 +1,8 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import { generatePdf } from '@/lib/pdfGenerator';
 import { CartItem } from '@/context/CartContext';
 import { kv } from '@vercel/kv';
+import nodemailer from 'nodemailer'; // NEW IMPORT
 
 export async function POST(req: NextRequest) {
   console.log("API route generate-order-pdf hit!");
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Dati mancanti per la generazione del PDF.' }, { status: 400 });
     }
 
-    const orderId = Date.now().toString(); // ID ordine basato sul timestamp
+    const orderId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`; // ID ordine univoco
     const orderDate = new Date().toLocaleDateString('it-IT', {
       year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
     });
@@ -59,6 +59,18 @@ export async function POST(req: NextRequest) {
         </tr>
       `;
     });
+    `;
+
+    cartItems.forEach((item: CartItem) => {
+      htmlContent += `
+        <tr>
+          <td>${item.productName}</td>
+          <td>${item.package.size}</td>
+          <td>€${item.package.price.toFixed(2)}</td>
+          <td>€${(item.package.price * item.quantity).toFixed(2)}</td>
+        </tr>
+      `;
+    });
 
     htmlContent += `
         </tbody>
@@ -68,7 +80,7 @@ export async function POST(req: NextRequest) {
       <p>Grazie per il tuo acquisto!</p>
     `;
 
-    const pdfUrl = await generatePdf(htmlContent, orderId);
+    const { pdfUrl, pdfBuffer } = await generatePdf(htmlContent, orderId); // MODIFIED CALL
     console.log(`PDF URL generato da generatePdf: ${pdfUrl}`); // Log the generated URL
 
     // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
@@ -76,6 +88,47 @@ export async function POST(req: NextRequest) {
     // Aggiungi l'ID dell'ordine a una lista di tutti gli ordini
     await kv.set(`order_id:${orderId}`, 'true');
     console.log(`URL PDF per ordine ${orderId} salvato in Vercel KV: ${pdfUrl}`);
+
+    // --- Email Sending Logic ---
+    const adminEmail: string | null = await kv.get('admin_email');
+    if (adminEmail && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: adminEmail,
+        subject: `Nuovo Ordine Aurora Café - #${orderId}`,
+        html: `
+          <p>Hai ricevuto un nuovo ordine da ${formData.name} (${formData.email}).</p>
+          <p><strong>ID Ordine:</strong> #${orderId}</p>
+          <p><strong>Totale:</strong> €${orderTotal}</p>
+          <p>Alleghiamo il PDF dell'ordine.</p>
+        `,
+        attachments: [
+          {
+            filename: `ordine_${orderId}.pdf`,
+            content: pdfBuffer,
+            contentType: 'application/pdf',
+          },
+        ],
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log('Email ordine inviata con successo ad admin.');
+      } catch (emailError) {
+        console.error('Errore nell\'invio dell\'email all\'admin:', emailError);
+      }
+    } else {
+      console.log('Invio email all\'admin saltato: email admin non configurata o credenziali mancanti.');
+    }
+    // --- End Email Sending Logic ---
 
     return NextResponse.json({ message: 'PDF generato e caricato con successo!', pdfUrl });
   } catch (error: any) {
