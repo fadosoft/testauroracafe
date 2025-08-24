@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 // Interfaccia aggiornata per corrispondere alla nuova risposta dell'API
@@ -17,6 +17,7 @@ export default function RiservatePage() {
   const [isRefreshing, setIsRefreshing] = useState(false); // Per l'aggiornamento
   const [orders, setOrders] = useState<Order[]>([]);
 
+  // Questa dovrebbe essere una chiave segreta vera, salvata nelle variabili d'ambiente
   const CORRECT_SECRET_KEY = 'RISERVATE_SECRET';
 
   // Funzione riutilizzabile per caricare gli ordini
@@ -53,7 +54,7 @@ export default function RiservatePage() {
   };
 
   const handleDelete = async (publicIdToDelete: string) => {
-    if (!window.confirm(`Sei sicuro di voler eliminare l订单 ${publicIdToDelete}? L'azione è irreversibile.`)) {
+    if (!window.confirm(`Sei sicuro di voler eliminare l\'ordine ${publicIdToDelete}? L\'azione è irreversibile.`)) {
       return;
     }
     try {
@@ -92,6 +93,10 @@ export default function RiservatePage() {
     }
   };
 
+  useEffect(() => {
+    console.log("Stato attuale degli ordini nel frontend:", orders, "Lunghezza:", orders.length);
+  }, [orders]); // Log whenever 'orders' state changes
+
   return (
     <div className="container mt-5 text-center">
       <div className="py-5">
@@ -128,7 +133,6 @@ export default function RiservatePage() {
                   {loading ? 'Eliminazione...' : 'Elimina Tutti'}
                 </button>
               </div>
-              {console.log("Stato attuale degli ordini nel frontend:", orders, "Lunghezza:", orders.length)}
               {orders.length > 0 ? (
                 <ul className="list-group mx-auto" style={{ maxWidth: '600px' }}>
                   {orders.map((order) => (
