@@ -59,18 +59,6 @@ export async function POST(req: NextRequest) {
         </tr>
       `;
     });
-    `;
-
-    cartItems.forEach((item: CartItem) => {
-      htmlContent += `
-        <tr>
-          <td>${item.productName}</td>
-          <td>${item.package.size}</td>
-          <td>€${item.package.price.toFixed(2)}</td>
-          <td>€${(item.package.price * item.quantity).toFixed(2)}</td>
-        </tr>
-      `;
-    });
 
     htmlContent += `
         </tbody>
