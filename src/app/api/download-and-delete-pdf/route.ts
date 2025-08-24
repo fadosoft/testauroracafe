@@ -43,22 +43,6 @@ export async function GET(request: NextRequest) {
       headers: headers,
     });
 
-    // Elimina il file da Cloudinary DOPO aver preparato la risposta
-    try {
-      await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
-      console.log(`File ${publicId} eliminato con successo da Cloudinary.`);
-
-      // Estrai l'orderId dal publicId per la chiave KV
-      const orderId = publicId.replace('order-', '');
-      await kv.del(`order:${orderId}`);
-      await kv.del(`order_id:${orderId}`); // Rimuovi anche la chiave dall'elenco degli ordini
-      console.log(`Dati per ordine ${orderId} eliminati con successo da Vercel KV.`);
-
-    } catch (destroyError) {
-      console.error(`Errore durante l'eliminazione del file ${publicId} da Cloudinary o Vercel KV:`, destroyError);
-      // Non blocchiamo il download se l'eliminazione fallisce, ma logghiamo l'errore.
-    }
-
     return response;
 
   } catch (error) {

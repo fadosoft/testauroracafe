@@ -147,12 +147,12 @@ export default function AdminOrdersPage() {
           {pdfFiles.map((fileName) => (
             <li key={fileName} className="list-group-item d-flex justify-content-between align-items-center">
               <div>
-                <Link href={`/orders/${fileName}`} target="_blank" rel="noopener noreferrer">
+                <a href={`/api/download-and-delete-pdf?public_id=${fileName}`} target="_blank" rel="noopener noreferrer">
                   {fileName}
-                </Link>
+                </a>
               </div>
               <div>
-                <a href={`/orders/${fileName}`} download className="btn btn-sm btn-primary me-2">
+                <a href={`/api/download-and-delete-pdf?public_id=${fileName}`} download className="btn btn-sm btn-primary me-2">
                   Scarica
                 </a>
                 <button
