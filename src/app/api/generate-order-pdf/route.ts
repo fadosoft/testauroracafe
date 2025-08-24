@@ -80,11 +80,10 @@ export async function POST(req: NextRequest) {
     const { pdfUrl, pdfBuffer } = await generatePdf(htmlContent, publicId);
     console.log(`PDF URL generato da generatePdf: ${pdfUrl}`);
 
-    // Salva l'URL del PDF in Vercel KV con una chiave unica per l'ordine
+    // Salva l'URL del PDF e aggiungi l'ID all'indice degli ordini
     await kv.set(`order:${publicId}`, pdfUrl);
-    // Aggiungi l'ID dell'ordine a una lista di tutti gli ordini
-    await kv.set(`order_id:${publicId}`, 'true');
-    console.log(`URL PDF per ordine ${publicId} salvato in Vercel KV: ${pdfUrl}`);
+    await kv.sadd('orders_index', publicId); // Aggiunge a un set per un recupero affidabile
+    console.log(`Ordine ${publicId} salvato e aggiunto all\'indice.`);
 
     // --- Email Sending Logic ---
     const adminEmail: string | null = await kv.get('admin_email');

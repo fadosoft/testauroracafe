@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
 import { kv } from '@vercel/kv';
 
-// Configure Cloudinary
+// Configura Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Common authorization function
+// Funzione di autorizzazione comune
 async function authorizeRequest(req: NextRequest) {
   const secretKey = process.env.ADMIN_SECRET_KEY;
   if (!secretKey) {
@@ -22,7 +22,7 @@ async function authorizeRequest(req: NextRequest) {
   return true;
 }
 
-// Handles single PDF deletion
+// Gestisce la cancellazione di un singolo PDF
 export async function POST(req: NextRequest) {
   try {
     if (!(await authorizeRequest(req))) {
@@ -34,15 +34,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Nome del file non fornito.' }, { status: 400 });
     }
 
-    const publicId = fileName; // The fileName from the admin page is the public_id
-    const orderId = publicId.replace('order-', '');
+    const publicId = fileName;
 
-    // Delete from Cloudinary
+    // Cancella da Cloudinary
     await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
 
-    // Delete from Vercel KV
-    await kv.del(`order:${orderId}`);
-    await kv.del(`order_id:${publicId}`);
+    // Cancella da Vercel KV
+    await kv.del(`order:${publicId}`); // Rimuove i dettagli dell'ordine
+    await kv.srem('orders_index', publicId); // Rimuove dall'indice
 
     console.log(`File ${publicId} e dati associati eliminati con successo.`);
     return NextResponse.json({ message: `File ${fileName} eliminato con successo.` });
@@ -53,31 +52,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Handles bulk PDF deletion
+// Gestisce la cancellazione di massa dei PDF
 export async function DELETE(req: NextRequest) {
   try {
     if (!(await authorizeRequest(req))) {
       return NextResponse.json({ message: 'Non autorizzato.' }, { status: 401 });
     }
 
-    const orderIdKeys = await kv.keys('order_id:*');
-    if (orderIdKeys.length === 0) {
+    const publicIds = await kv.smembers('orders_index');
+    if (publicIds.length === 0) {
       return NextResponse.json({ message: 'Nessun file PDF da eliminare.' });
     }
 
-    const publicIds = orderIdKeys.map(key => key.replace('order_id:', ''));
-    const orderIds = publicIds.map(pid => pid.replace('order-', ''));
-
-    // Bulk delete from Cloudinary
+    // Cancellazione di massa da Cloudinary
     if (publicIds.length > 0) {
       await cloudinary.api.delete_resources(publicIds, { resource_type: 'raw' });
     }
 
-    // Bulk delete from Vercel KV
-    const kvKeysToDelete = [
-      ...orderIdKeys,
-      ...orderIds.map(id => `order:${id}`)
-    ];
+    // Cancellazione di massa da Vercel KV
+    const kvKeysToDelete = publicIds.map(id => `order:${id}`);
+    kvKeysToDelete.push('orders_index'); // Cancella anche l'indice stesso
     
     if (kvKeysToDelete.length > 0) {
       await kv.del(...kvKeysToDelete);

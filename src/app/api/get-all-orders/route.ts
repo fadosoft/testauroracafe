@@ -3,20 +3,17 @@ import { kv } from '@vercel/kv';
 
 export async function GET(req: NextRequest) {
   try {
-    // Recupera tutte le chiavi che rappresentano un ID ordine
-    const orderIdKeys: string[] = await kv.keys('order_id:*');
+    // Recupera tutti i publicId dall'indice affidabile
+    const publicIds: string[] = await kv.smembers('orders_index');
 
     const orders = [];
-    for (const key of orderIdKeys) {
-      // Il publicId è la parte della chiave dopo 'order_id:'
-      const publicId = key.replace('order_id:', '');
-      
+    for (const publicId of publicIds) {
       // Recupera l'URL del PDF corrispondente dalla chiave 'order:'
       const pdfUrl: string | null = await kv.get(`order:${publicId}`);
       
       if (pdfUrl) {
         orders.push({
-          publicId: publicId, // Invia il publicId al frontend
+          publicId: publicId,
           pdfUrl: pdfUrl,
         });
       }
