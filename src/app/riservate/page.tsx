@@ -128,6 +128,7 @@ export default function RiservatePage() {
                   {loading ? 'Eliminazione...' : 'Elimina Tutti'}
                 </button>
               </div>
+              {console.log("Stato attuale degli ordini nel frontend:", orders, "Lunghezza:", orders.length)}
               {orders.length > 0 ? (
                 <ul className="list-group mx-auto" style={{ maxWidth: '600px' }}>
                   {orders.map((order) => (
